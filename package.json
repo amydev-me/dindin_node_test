@@ -4,7 +4,8 @@
   "description": "Collect Treasures",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.js -e js"
   },
   "author": "",
   "license": "ISC",
@@ -12,5 +13,9 @@
     "express": "^4.17.1",
     "mysql2": "^1.7.0",
     "sequelize": "^5.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.2",
+    "sequelize-cli": "^5.5.1"
   }
 }
