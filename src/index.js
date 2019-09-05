@@ -4,45 +4,61 @@ const port = 3000;
 app.use(express.json());
 const models = require( '../models/index');
 
-app.get('/users', async (req,res) =>{
-    const {lat, lng, distance} = req.query;
-    try{
-        const treasures =  await models.sequelize.query(
-            `SELECT id, ( 3959 * acos( cos( radians($lat) ) * cos( radians( latitude ) ) * 
-            cos( radians( longtitude ) - radians($lng) ) + sin( radians($lat) ) * 
-            sin( radians( latitude ) ) ) ) AS distance FROM treasures HAVING 
-            distance < $distance ORDER BY distance`,
-            { 
-                bind: { lat, lng , distance },
-                type: models.sequelize.QueryTypes.SELECT
+/**
+ * Validate Input Request
+ * @param {Valid} fields 
+ */
+const validateQuery = (fields) =>{
+    return (req, res, next) => {
+        for(const field of fields) {
+            if(!req.query[field]) { 
+                return res
+                    .status(400)
+                    .send({'status':'invalid_request',message:'Invalid request'});
             }
-        );
+        }
+        next();
+    };
+}
+/**
+ * Calculate Distance 
+ * @param {*} param0 
+ */
+const NearestQuery = ({latitude, longitude}) =>{
+    return ` 3959 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * 
+                    cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * 
+                    sin( radians( latitude ) ) ) `;
+}
 
-            res.status(200).send({total:treasures.length, treasures: treasures});
-    }catch(e){
-        res.status(500);
-    }
-});
-
-app.get('/findbyvalue', async (req, res)=>{
-    const {lat, lng, distance} = req.query;
+app.get('/api/nearest-gem', validateQuery(['latitude', 'longitude','distance']), async (req,res) =>{
     try{
-        const treasures =  await models.user.finAll({
-            attribute:[
+
+        const {distance, amount} = req.query;
+
+        /**
+         *Amount field is optional
+         */
+        const criteria = amount ? [{
+                            model: models.MoneyValue,
+                            where: { amt: amount }
+                        } ]:[];
+        
+        const query = NearestQuery(req.query);
+        const response = await models.Treasure.findAll({
+            attributes: [
                 'id',
-                [models.sequelize.fn('( 3959 * acos( cos( radians($lat) ) * cos( radians( latitude ) ) * cos( radians( longtitude ) - radians($lng) ) + sin( radians($lat) ) * sin( radians( latitude ) ) ) )'),'distance']
-            ]
-        })
-        // .sequelize.query(
-        //     `SELECT id, ( 3959 * acos( cos( radians($lat) ) * cos( radians( latitude ) ) * 
-        //     cos( radians( longtitude ) - radians($lng) ) + sin( radians($lat) ) * 
-        //     sin( radians( latitude ) ) ) ) AS distance FROM treasures HAVING 
-        //     distance < $distance ORDER BY distance`
-        //     ,{ bind:{lat, lng , distance},type: models.sequelize.QueryTypes.SELECT});
-        res.status(200).send({total:treasures.length, treasures: treasures,status:"success"});
+                [
+                    models.sequelize.literal(query),'distance'
+                ]
+            ],
+            having: models.sequelize.literal('distance < '+distance),
+            include: criteria
+        });
+        res.status(200).send({count:response.length, treasures:response});
     }catch(e){
         res.status(500);
-    }
+    };
 });
+
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

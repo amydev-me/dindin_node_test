@@ -1,12 +1,18 @@
-'use strict';
-module.exports = (sequelize, DataTypes) => {
-  const Treasure = sequelize.define('Treasure', {
-    latitude: DataTypes.DECIMAL,
-    longtitude: DataTypes.DECIMAL,
-    name: DataTypes.STRING
-  }, {});
-  Treasure.associate = function(models) {
-    // Treasure.hasMany(models.MoenyValue)
+
+const Treasure = (sequelize, DataTypes) => {
+   
+    var Treasure = sequelize.define('Treasure', {
+      latitude: DataTypes.DECIMAL,
+      longitude: DataTypes.DECIMAL,
+      name: DataTypes.STRING
+    }, {
+      timestamps:false
+    });
+    Treasure.associate = function(models) {
+      Treasure.hasMany(models.MoneyValue,{foreignKey:'treasure_id'});
+
+    };
+    return Treasure;
   };
-  return Treasure;
-};
+
+  module.exports = Treasure;

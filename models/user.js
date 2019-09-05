@@ -1,4 +1,3 @@
-
 const User = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     name: DataTypes.STRING,
@@ -9,7 +8,6 @@ const User = (sequelize, DataTypes) => {
     timestamps:false
   });
   User.associate = function(models) {
-    // associations can be defined here
   };
   return User;
 };
