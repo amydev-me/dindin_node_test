@@ -11,24 +11,50 @@ app.post('/api/nearest-gem',validateRequest(), async (req,res) =>{
     try{
         const {distance, amount} = req.body;
 
+        const arr = amount?amount:[];
+        const min = Math.min(...arr);
         const criteria = amount ? [{
                             model: models.MoneyValue,
-                            where: { amt: amount }
+                            where:{
+                                'amt':min
+                            } 
                         } ]:[];
         
         const query = NearestQuery(req.body);
-
-        const response = await models.Treasure.findAll({
+                        
+        const treasures = await models.Treasure.findAll({
             attributes: [
                 'id',
                 [
-                    models.sequelize.literal(query),'distance'
+                     models.sequelize.literal(query),'distance'
                 ]
             ],
-            having: models.sequelize.literal('distance < '+distance),
+            having: models.sequelize.literal('distance < '+ distance),
+           
             include: criteria
         });
-        res.status(200).send({count:response.length, treasures:response});
+
+        res.status(200).send({count:treasures.length, treasures});
+    }catch(e){
+        res.status(500);
+    }
+});
+
+app.post('/api/guess', async (req,res) =>{
+    try{
+        const {latitude, longitude} = req.body;
+
+        const response = await models.Treasure.findOne({
+            where:{
+                latitude,longitude
+            }
+           
+        });
+        if(response){
+            res.status(200).send({message:'You found a gem.'});
+        }
+        res.status(200).send({message:'Guess it again!'});
+
     }catch(e){
         res.status(500);
     }

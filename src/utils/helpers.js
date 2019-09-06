@@ -10,6 +10,19 @@ const NearestQuery = ({latitude, longitude}) =>{
                     sin( radians( latitude ) ) ) `;
 }
 
+const convertDistanceToString = (distance) =>{
+    let val = 0;
+    
+    tmp = Math.round(distance * 1000, 2);
+    if (tmp > 1000) {
+        val = Math.round(distance, 2) + 'K';
+    } else {
+        val = Math.round(tmp, 2) + 'M';
+    }
+    return val;
+}
+
 module.exports = {
-    NearestQuery
+    NearestQuery,
+    convertDistanceToString
 }

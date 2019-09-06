@@ -41,3 +41,28 @@ Start the local development server
 
 
 You can now access the server at http://localhost:PORT
+### API
+
+Part1 -1 URL
+```
+    @POST http://localhost:3000/api/nearest-gem
+```
+```
+{
+    "latitude" : 1.3273451,
+    "longitude":103.8756757,
+    "distance":1,
+    "amount":[15,30]
+}
+```
+Part1 -2 URL
+```
+    @POST http://localhost:3000/api/guess
+```
+```
+{
+	
+"latitude" : 1.33125924,
+"longitude":103.89804864
+}
+```
